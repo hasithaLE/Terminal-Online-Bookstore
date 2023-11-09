@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
+using System.Reflection.PortableExecutable;
 
 namespace Online_Bookstore
 {
@@ -24,40 +25,34 @@ namespace Online_Bookstore
 				Console.Write($"password: ");
 				string pWord = Console.ReadLine();
 
-				string usernameQuery = "SELECT username FROM logins WHERE username = '"+uName+"';";
-				string passwordQuery = "SELECT password FROM logins WHERE username = '"+uName+"';";
+				string usernameQuery = $"SELECT username,password FROM logins WHERE username = @UserName;";
 
 				SqlCommand uNameSqlCommand = new SqlCommand(usernameQuery,sqlConnection);
+				uNameSqlCommand.Parameters.AddWithValue("@UserName", uName);
+				SqlDataReader reader = uNameSqlCommand.ExecuteReader();
 
-				SqlDataReader reader1 = uNameSqlCommand.ExecuteReader();
-				Console.WriteLine(reader1.GetValue(1).ToString());
-				//string uNameCheck = reader1.GetValue(1).ToString();
-				reader1.Close();
-
-				SqlCommand pWordSqlCommand = new SqlCommand(passwordQuery, sqlConnection);
-
-				SqlDataReader reader2 = pWordSqlCommand.ExecuteReader();
-				Console.WriteLine(reader2.GetValue(1).ToString());
-				//string pWordCheck = reader2.GetValue(1).ToString();
-				reader2.Close();
-
-				//if (uNameCheck != null || uNameCheck != "" )
-				//{
-				//	if (uName == uNameCheck && pWord == pWordCheck)
-				//	{
-				//		Console.WriteLine("Hi, Welcome "+ uNameCheck);
-				//	}
-    //                else
-    //                {
-				//		Console.WriteLine("Incorrect username or password.");
-    //                }
-    //            }
-    //            else
-    //            {
-				//	Console.WriteLine("Not a registered user.");
-    //            }
-
-
+				if (reader.Read())
+				{
+					Console.WriteLine(uName);
+					string usrnme = reader[0].ToString();
+					Console.WriteLine(usrnme);
+					Console.WriteLine(String.Equals(usrnme, uName, StringComparison.OrdinalIgnoreCase));
+					Console.WriteLine(pWord);
+					Console.WriteLine(reader[1].ToString());
+					if (uName == reader[0].ToString() && pWord == reader[1].ToString())
+					{
+						Console.WriteLine($"Login Success!\nHi {uName}, Welcome!");
+					}
+                    else
+                    {
+						Console.WriteLine("invalid username or password");
+                    }
+                }
+                else
+                {
+					Console.WriteLine("invalid username or password");
+                }
+                reader.Close();
 				sqlConnection.Close();
 			}
 			else if (inputOne == "2")
